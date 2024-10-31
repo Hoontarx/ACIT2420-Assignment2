@@ -1,1 +1,2 @@
-asn,nafanfl
+#!/bin/bash
+#This is a script that will create new users with a specified shell

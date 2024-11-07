@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# This checks if the script was run with sudo by cecking the effective user id
+# If it wasn't run with sudo, lets the user know and exits the script
+# Otherwise the script will continue
+if [ "$EUID" -ne 0 ]; then
+  echo "Please run the script with sudo"
+  exit
+fi

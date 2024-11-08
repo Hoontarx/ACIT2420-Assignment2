@@ -3,7 +3,37 @@
 # This checks if the script was run with sudo by cecking the effective user id
 # If it wasn't run with sudo, lets the user know and exits the script
 # Otherwise the script will continue
-if [ "$EUID" -ne 0 ]; then
+# Source: https://askubuntu.com/questions/15853/how-can-a-script-check-if-its-being-run-as-root
+if [[ "$EUID" -ne 0 ]]; then
   echo "Please run the script with sudo"
-  exit
+  exit 1
 fi
+
+# This will assign the home directory of the user that ran the script to the variable USER_HOME
+# Source: https://stackoverflow.com/questions/61235185/how-to-get-home-directory-of-user-in-bash-script-root-mode
+USER_HOME=$(eval echo ~$SUDO_USER)
+
+#This will clone the config files necessary from the gitlab repository to the home directory
+# git clone https://gitlab.com/cit2420/2420-as2-starting-files.git $USER_HOME/conf-files
+
+while getopts ":is" opt; do
+  case ${opt} in
+    i) 
+      # This will call the install-packages file
+      source install-packages
+      # This will call the function read-file in the install-packages file
+      read-file
+      # This is done so when this script file is called by the main script file, the function will be executed since it's not being executed in the install-packages file
+      ;;
+    s)
+      # This will call the symbolic-links file
+      source symbolic-links 
+      # This will call the function create-links in the symbolic-links file
+      create-links;;
+      # This is done so when this script file is called by the main script file, the function will be executed since it's not being executed in the symbolic-links file
+    \?)
+      echo "Please use either -i to install packages or -s to create symbolic links"
+      exit 1
+      ;;
+  esac
+done

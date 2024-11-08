@@ -9,15 +9,24 @@ if [[ "$EUID" -ne 0 ]]; then
   exit 1
 fi
 
+# This is checking to see if the script was run with options
+# If it wasn't, it tells the users the options they can use and exits the script
+if [[ $# -lt 1 ]]; then
+  echo "Please run the script with -c to clone the configuration files, -i to install packages or -s to create symbolic links to the configuration files"
+  exit 1
+fi
+
 # This will assign the home directory of the user that ran the script to the variable USER_HOME
 # Source: https://stackoverflow.com/questions/61235185/how-to-get-home-directory-of-user-in-bash-script-root-mode
 USER_HOME=$(eval echo ~$SUDO_USER)
 
-#This will clone the config files necessary from the gitlab repository to the home directory
-# git clone https://gitlab.com/cit2420/2420-as2-starting-files.git $USER_HOME/conf-files
-
-while getopts ":is" opt; do
+while getopts ":isc" opt; do
   case ${opt} in
+    c)
+      #This will clone the config files necessary from the gitlab repository to the home directory
+      git clone https://gitlab.com/cit2420/2420-as2-starting-files.git $USER_HOME/config-files
+      ;;
+      # This was supposed to be at the start of the script but providing it as a option so the script doesn't crash once the repository is cloned
     i) 
       # This will call the install-packages file
       source install-packages
@@ -32,7 +41,9 @@ while getopts ":is" opt; do
       create-links;;
       # This is done so when this script file is called by the main script file, the function will be executed since it's not being executed in the symbolic-links file
     \?)
-      echo "Please use either -i to install packages or -s to create symbolic links"
+      # This will let the user know what option to provide if they don't provide a valid option
+      # Some extra error checking if the user doesn't pay attention to the first check
+      echo "Please use either -c to clone, -i to install packages or -s to create symbolic links"
       exit 1
       ;;
   esac

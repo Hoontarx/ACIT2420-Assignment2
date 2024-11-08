@@ -1,1 +1,18 @@
 #!/bin/bash
+
+create-links() {
+    # Assigning the cloned directory to the variable SOURCE_DIR
+    SOURCE_DIR="$HOME/conf-files"
+
+    # Set the users home directory
+    USER_HOME=$(eval echo ~$SUDO_USER)
+
+    # Creating a symbolic link from cloned bin to the users bin directory
+    ln -sf "$SOURCE_DIR/bin" "$USER_HOME/bin"
+
+    # Creating a symbolic link from cloned config to the users config directory
+    ln -sf "$SOURCE_DIR/config" "$USER_HOME/.config"
+
+    # Creating a symbolic link from cloned bashrc to the users bashrc file
+    ln -sf "$SOURCE_DIR/bashrc" "$USER_HOME/.bashrc"
+}

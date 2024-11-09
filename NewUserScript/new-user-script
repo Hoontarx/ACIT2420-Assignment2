@@ -11,15 +11,24 @@ fi
 
 # Initializing variables that we will be asking the user to enter using getopts
 username=""
-password=""
+user_id=""
+group_id=""
 user_info=""
 shell=""
 
 # This function will tell the user how to use the script if they don't provide the correct options
 usage() {
-  echo "Usage: $0 -u <username> -p <password> -i <user_info> -s <shell>"
+  echo 'Usage: $0 -u <username> -d -i <"user_info"> -s <shell>'
   exit 1
 }
+
+# This is checking to see if the script was run with options
+# If it wasn't, it tells the users the options they can use and exits the script
+if [[ $# -lt 1 ]]; then
+  echo "Please run the script in the following way:"
+  usage
+  exit 1
+fi
 
 # This function will use grep to check if the username already exists
 # If it does, it will let the user know and exit the script
@@ -28,6 +37,16 @@ checkusername() {
     echo "Username already exists"
     exit 1
   fi
+}
+
+# This function will generate a unique user id
+# For the purpose of this assignment, it will also act as the group id
+generateid() {
+  id="1000"
+  while grep -q "^.*:.*:.*:$id:" /etc/passwd; do
+    id=$((id + 1))
+  done
+  echo "$id"
 }
 
 # This function will use grep to see if a shell isn't in the /etc/shells file
@@ -41,25 +60,77 @@ checkshell() {
   fi
 }
 
-while getopts ":u:p:i:s:" opt; do
+# This function will create the home directory for the new user
+# It will also copy the /etc/skel files to the new user's home directory
+# Then it will change the ownership of the home directory to the new user
+# Lastly, it will be called at the end of the script
+createhomedir() {
+  # Creating the home directory for the user
+  mkdir -p /home/$username
+
+  # Copy the /etc/skel files to the new user's home directory
+  cp -r /etc/skel /home/$username
+
+  # Then we will change the ownership of the home directory to the new user
+  chown -R $username:$username /home/$username
+}
+
+while getopts ":u:di:s:" opt; do
   case $opt in
     u)
+      # The variable username will be set to the argument provided by the user
       username=$OPTARG
+      # This will send the username variable to the checkusername function
       checkusername $username
       ;;
+    d)
+      # This will call the generateid function and assign the result to the user_id
+      user_id=$(generateid)
+      # Then we will assign the same user_id to the group_id
+      group_id=$user_id
+      ;;
     i)
+      # This will store a string of user information
+      # This could be email, phone number, etc.
       user_info=$OPTARG
       ;;
     s)
+      # This recieves a specified shell from the user
       shell=$OPTARG
+      # The shell variable is then passed to a function that will check if the shell exists
       checkshell $shell
       ;;
     \?)
+      # This will call the usage function
+      # It will catch any invalid options provided by the user
+      # and let the user know how to use the script
       usage
       ;;
   esac
 done
 
-echo "Username: $username"
-echo "User Info: $user_info"
-echo "shell: $shell"
+# Since we want to write to the /etc/passwd file, we want to make sure the user has entered all the necessary information
+# To do this we use the -z flag to check if the variables are empty
+# If they are, we let the user know and exit the script
+# Source: https://www.cyberciti.biz/faq/unix-linux-bash-script-check-if-variable-is-empty/
+if [[ -z $username ]] || [[ -z $user_info ]] || [[ -z $shell ]]; then
+  echo "Please run the script in the following manner:"
+  usage
+  exit 1
+fi
+
+# This will write the user information to the /etc/passwd file
+printf "\n$username:x:$user_id:$group_id:$user_info:/home/$username:$shell" >> /etc/passwd
+
+# Check if a group with the same name as the username exists
+# If it does, we will use the existing group
+# Otherwise we will create a new group with the same name as the username
+if [[ ! `grep $username /etc/group` ]]; then
+  printf "$username:x:$group_id:\n" >> /etc/group
+fi
+
+# We will call the createhomedir function to create the home directory for the new user
+createhomedir
+
+# Lastly, we will prompt the user to enter a password for the new user
+passwd $username

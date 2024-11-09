@@ -16,6 +16,16 @@ There are 3 different options that can be supplied:
 - -i: This will install the packages located in the packages file
 
 - -s: This will create the necessary symbolic links to use the configuration files hosted on gitlab
-
-
 ## Project 2 - Creating a New User
+In this project, a script has been made to create a new user without the use of useradd. This has been done by writing the new user information to /etc/passwd and new group information to /etc/group. Using getopts the script allows the user to select the username, add additional user info, and select the shell they would like to use. The UID and GID are generated behind the scenes and the home directory is created based off the username supplied assuming it isn't already taken.
+
+When running the command it takes multiple flags, however, it checks to see if any are empty. If there is an empty parameter, the script will exit. These flags include:
+- -u: This is for the username
+- -d: This is for the ids
+- -i: This is for user info
+- -s: This is for the shell
+
+The general usage when running the command is the following:
+sudo ./new-user-script -u USERNAME -d -i "USER_INFO" -s SHELL 
+
+In the actual script, please ignore the "<" and ">" and don't actually type those, they are just there to show you where you need to enter information.

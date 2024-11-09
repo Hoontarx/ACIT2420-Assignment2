@@ -31,15 +31,16 @@ while getopts ":isc" opt; do
       # This will call the install-packages file
       source install-packages
       # This will call the function read-file in the install-packages file
-      read-file
+      readfile
       # This is done so when this script file is called by the main script file, the function will be executed since it's not being executed in the install-packages file
       ;;
     s)
       # This will call the symbolic-links file
       source symbolic-links 
       # This will call the function create-links in the symbolic-links file
-      create-links;;
+      createlinks
       # This is done so when this script file is called by the main script file, the function will be executed since it's not being executed in the symbolic-links file
+      ;;
     \?)
       # This will let the user know what option to provide if they don't provide a valid option
       # Some extra error checking if the user doesn't pay attention to the first check

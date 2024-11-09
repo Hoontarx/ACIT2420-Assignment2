@@ -1,14 +1,21 @@
 #!/bin/bash
 
 # This function will read through the packages file and install the packages listed in the file
-read-file() {
-    # This will look at the packages file and store the contents in the array packages
-    # Source: https://stackoverflow.com/questions/11393817/read-lines-from-a-file-into-a-bash-array
-    readarray -t packages < packages
-
-    # This will loop through the packages array and install the packages listed in the file
-    for package in "${packages[@]}"; do
-        # This will install the package listed in the packages file
-        pacman -Syu $package
-    done
+readfile() {
+    # This checks if the file packages exists
+    # If it does, the script will continue
+    if [ -f packages ]; then
+        # This will look at the packages file and store the contents in the array packages
+        # Source: https://stackoverflow.com/questions/11393817/read-lines-from-a-file-into-a-bash-array
+        readarray -t packages < packages
+        # This will loop through the packages array and install the packages listed in the file
+        for package in "${packages[@]}"; do
+            # This will install the package listed in the packages file
+            pacman -Syu $package
+        done
+    else
+        # If the file doesn't exist, the script will let the user know and exit
+        echo "packages file either does not exist or isn't in the correct directory"
+        exit 1
+    fi
 }

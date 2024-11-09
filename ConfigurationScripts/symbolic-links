@@ -1,6 +1,7 @@
 #!/bin/bash
 
-create-links() {
+# This function will create symbolic links using the cloned configuration files as the source and the users home directory as the target
+createlinks() {
     # Set the users home directory
     USER_HOME=$(eval echo ~$SUDO_USER)
 

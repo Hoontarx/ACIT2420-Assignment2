@@ -3,7 +3,63 @@
 # This checks if the script was run with sudo by cecking the effective user id
 # If it wasn't run with sudo, lets the user know and exits the script
 # Otherwise the script will continue
-if [ "$EUID" -ne 0 ]; then
+# Source: https://askubuntu.com/questions/15853/how-can-a-script-check-if-its-being-run-as-root
+if [[ "$EUID" -ne 0 ]]; then
   echo "Please run the script with sudo"
-  exit
+  exit 1
 fi
+
+# Initializing variables that we will be asking the user to enter using getopts
+username=""
+password=""
+user_info=""
+shell=""
+
+# This function will tell the user how to use the script if they don't provide the correct options
+usage() {
+  echo "Usage: $0 -u <username> -p <password> -i <user_info> -s <shell>"
+  exit 1
+}
+
+# This function will use grep to check if the username already exists
+# If it does, it will let the user know and exit the script
+checkusername() {
+  if [[ `grep $username /etc/passwd` ]]; then
+    echo "Username already exists"
+    exit 1
+  fi
+}
+
+# This function will use grep to see if a shell isn't in the /etc/shells file
+# This is done by supplying the -x flag which will match the whole line
+# If it isn't, it will let the user know and exit the script
+# Source: https://unix.stackexchange.com/questions/140286/how-to-find-list-of-available-shells-by-command-line
+checkshell() {
+  if [[ ! `grep -x $shell /etc/shells` ]]; then
+    echo "Shell does not exist"
+    exit 1
+  fi
+}
+
+while getopts ":u:p:i:s:" opt; do
+  case $opt in
+    u)
+      username=$OPTARG
+      checkusername $username
+      ;;
+    i)
+      user_info=$OPTARG
+      ;;
+    s)
+      shell=$OPTARG
+      checkshell $shell
+      ;;
+    \?)
+      usage
+      ;;
+  esac
+done
+
+echo "Username: $username"
+echo "User Info: $user_info"
+echo "shell: $shell"
